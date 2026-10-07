@@ -65,3 +65,7 @@ src/
 ├── App.jsx
 ├── index.css
 └── main.jsx
+
+## Live Preview
+
+[View Live Demo](https://shahreena133.github.io/smart-dev-habit-tracker/)
