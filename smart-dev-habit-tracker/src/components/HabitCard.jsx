@@ -1,7 +1,9 @@
 import { useState } from "react";
 
-function HabitCard({ habit, setHabits }) {
+function HabitCard({ habit, setHabits, showToast }) {
+ const [showDeleteModal, setShowDeleteModal] = useState(false); 
   const [isEditing, setIsEditing] = useState(false);
+  const [editError, setEditError] = useState("");
   const [editTitle, setEditTitle] = useState(habit.title);
   const [editMinutes, setEditMinutes] = useState(habit.targetMinutes);
   const [editCategory, setEditCategory] = useState(habit.category);
@@ -20,24 +22,46 @@ function HabitCard({ habit, setHabits }) {
           : item
       )
     );
+    showToast(
+  habit.completed
+    ? "Habit marked as incomplete."
+    : "Habit completed successfully!"
+);
   };
 
   const handleDelete = () => {
-    const confirmed = window.confirm(
-      `Are you sure you want to delete "${habit.title}"?`
-    );
+  setShowDeleteModal(true);
+};
 
-    if (!confirmed) return;
+const confirmDelete = () => {
+  setHabits((currentHabits) =>
+    currentHabits.filter((item) => item.id !== habit.id)
+  );
+showToast("Habit deleted successfully!");
+  setShowDeleteModal(false);
+};
 
-    setHabits((currentHabits) =>
-      currentHabits.filter((item) => item.id !== habit.id)
-    );
-  };
+const cancelDelete = () => {
+  setShowDeleteModal(false);
+};
 
   const handleSaveEdit = () => {
-    if (!editTitle.trim() || Number(editMinutes) <= 0 || !editCategory) {
-      return;
-    }
+    if (!editTitle.trim()) {
+  setEditError("Habit title cannot be empty.");
+  return;
+}
+
+if (!editMinutes || Number(editMinutes) <= 0) {
+  setEditError("Target minutes must be greater than 0.");
+  return;
+}
+
+if (!editCategory) {
+  setEditError("Please select a category.");
+  return;
+}
+
+setEditError("");
 
     setHabits((currentHabits) =>
       currentHabits.map((item) =>
@@ -53,6 +77,7 @@ function HabitCard({ habit, setHabits }) {
     );
 
     setIsEditing(false);
+    showToast("Habit updated successfully!");
   };
 
   const handleCancelEdit = () => {
@@ -63,16 +88,19 @@ function HabitCard({ habit, setHabits }) {
   };
 
   return (
+    <>
    <article
-  className={`rounded-xl bg-[#C8D9E6] p-5 shadow-sm ring-1 ${
-    habit.completed ? "ring-[#000000]" : "ring-[#000000]"
-  }`}
+  className="rounded-xl bg-[#C8D9E6] p-5 shadow-sm ring-1 ring-[#000000]"
 >
       {isEditing ? (
         <div className="space-y-4">
           <h3 className="text-lg font-bold text-black">
             Edit Habit
           </h3>
+
+<label className="text-sm font-medium text-black">
+  Habit Title
+</label>
 
           <input
             type="text"
@@ -81,6 +109,16 @@ function HabitCard({ habit, setHabits }) {
             className="w-full rounded-lg border border-[#2F4156] bg-white px-4 py-2 text-black outline-none focus:border-[#567C8D]"
           />
 
+          {editError === "Habit title cannot be empty." && (
+  <p className="text-sm text-red-600">
+    {editError}
+  </p>
+)}
+
+<label className="text-sm font-medium text-black">
+  Target Minutes
+</label>
+
           <input
             type="number"
             min="1"
@@ -88,6 +126,16 @@ function HabitCard({ habit, setHabits }) {
             onChange={(event) => setEditMinutes(event.target.value)}
             className="w-full rounded-lg border border-[#2F4156] bg-white px-4 py-3 text-black outline-none focus:border-[#567C8D]"
           />
+
+          {editError === "Target minutes must be greater than 0." && (
+  <p className="text-sm text-red-600">
+    {editError}
+  </p>
+)}
+
+<label className="text-sm font-medium text-black">
+  Category
+</label>
 
           <select
             value={editCategory}
@@ -99,6 +147,12 @@ function HabitCard({ habit, setHabits }) {
             <option value="Reading">Reading</option>
             <option value="Career">Career</option>
           </select>
+
+          {editError === "Please select a category." && (
+  <p className="text-sm text-red-600">
+    {editError}
+  </p>
+)}
 
           <div className="flex gap-2">
             <button
@@ -172,8 +226,43 @@ function HabitCard({ habit, setHabits }) {
           </div>
         </>
       )}
-    </article>
-  );
+
+</article>
+
+    {showDeleteModal && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
+          <h2 className="text-xl font-bold text-black">
+            Delete Habit?
+          </h2>
+
+          <p className="mt-2 text-sm text-black">
+            Are you sure you want to delete "{habit.title}"?
+            This action cannot be undone.
+          </p>
+
+          <div className="mt-6 flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={cancelDelete}
+              className="rounded-lg border border-gray-300 px-4 py-2 font-medium text-black hover:bg-gray-100"
+            >
+              Cancel
+            </button>
+
+            <button
+              type="button"
+              onClick={confirmDelete}
+              className="rounded-lg bg-red-600 px-4 py-2 font-medium text-white hover:bg-red-700"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+  </>
+);
 }
 
 export default HabitCard;

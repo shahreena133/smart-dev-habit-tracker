@@ -1,6 +1,5 @@
 import HabitCard from "./HabitCard";
-
-function HabitList({ habits, setHabits }) {
+function HabitList({ habits, setHabits, showToast }) {
   return (
     <section>
       <div className="mb-5">
@@ -30,6 +29,7 @@ function HabitList({ habits, setHabits }) {
               key={habit.id}
               habit={habit}
               setHabits={setHabits}
+              showToast={showToast}
             />
           ))}
         </div>
